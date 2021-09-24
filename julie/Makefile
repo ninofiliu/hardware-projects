@@ -1,6 +1,5 @@
 all:
-clean:
-	rm build/*
-dev:
+	rm -rf build
+	mkdir build
 	gcc -o build/dev dev.c
 	./build/dev
