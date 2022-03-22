@@ -16,15 +16,40 @@ void set_light(int on) {
     printf("\e[F");
   }
 }
+// void set_light(int on) {
+//   digitalWrite(8, on ? HIGH : LOW);
+// }
 
-float rand_float_range(float from, float to) {
+float rand_float_range(float min, float max) {
   float scale = rand() / (float)RAND_MAX;
-  return from + scale * (to-from);
+  return min + scale * (max - min);
 }
+// float rand_float_range(float min, float max) {
+//   return random(min, max);
+// }
 
-float rand_int_range(int min, int max) {
+int rand_int_range(int min, int max) {
   return min + rand()%(max-min);
 }
+// int rand_int_range(int min, int max) {
+//   return random(min, max);
+// }
+
+void fsleep(float s) {
+  usleep((int)(s * 1000 * 1000));
+}
+void fsleep(float s) {
+  if (s < 1.0) {
+    delay((int)(s*1000));
+  } else {
+    for (int i = 0; i < 1000; i++) {
+      delay((int)s);
+    }
+  }
+}
+// void fsleep(float s) {
+//   delay((int)(s * 1000));
+// }
 
 void stays_on() {
   float min_duration = 1.0;
@@ -32,7 +57,7 @@ void stays_on() {
 
   float duration = rand_float_range(min_duration, max_duration);
   set_light(1);
-  usleep((int)(duration*1000*1000));
+  fsleep(duration);
 }
 
 void stays_off() {
@@ -41,7 +66,7 @@ void stays_off() {
 
   float duration = rand_float_range(min_duration, max_duration);
   set_light(0);
-  usleep((int)(duration*1000*1000));
+  fsleep(duration);
 }
 
 void flickers() {
@@ -52,11 +77,14 @@ void flickers() {
   float total_duration = rand_float_range(total_min_duration, total_max_duration);
   for (int i = 0; i < (int)(total_duration/flicker_duration); i++) {
     set_light(rand() % 2);
-    usleep((int)(flicker_duration*1000*1000));
+    fsleep(flicker_duration);
   }
 }
 
 void setup() {}
+// void setup() {
+//   pinMode(8, OUTPUT);
+// }
 
 void loop() {
   int min_nb_flickers = 1;
