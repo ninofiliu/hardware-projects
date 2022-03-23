@@ -2,13 +2,31 @@
 
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NO_ACK);
 
-uint8_t invaderBitmap[8] = {
-    0b00011000, 0b00111100, 0b01111110, 0b01011010,
-    0b01011010, 0b11111111, 0b10100101, 0b10100101,
-};
+int frame = 0;
+
+uint8_t invaderBitmaps[2][8] = {{
+                                    0b01011010,
+                                    0b00111100,
+                                    0b01111110,
+                                    0b01011010,
+                                    0b11011011,
+                                    0b11111111,
+                                    0b10100101,
+                                    0b00100100,
+                                },
+                                {
+                                    0b00011000,
+                                    0b10111101,
+                                    0b01111110,
+                                    0b01011010,
+                                    0b01011010,
+                                    0b11111111,
+                                    0b10011001,
+                                    0b10011001,
+                                }};
 
 void drawInvader(uint8_t x, uint8_t y) {
-  u8g.drawBitmap(x, y, 1, 8, invaderBitmap);
+  u8g.drawBitmap(x, y, 1, 8, invaderBitmaps[(frame >> 2) & 1]);
 }
 
 void draw(void) {
@@ -33,4 +51,5 @@ void loop(void) {
     u8g.setFontPosTop();
     draw();
   } while (u8g.nextPage());
+  frame++;
 }
