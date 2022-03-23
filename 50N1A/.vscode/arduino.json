@@ -1,0 +1,7 @@
+{
+    "board": "arduino:avr:uno",
+    "port": "/dev/ttyACM0",
+    "programmer": "arduino:avrisp",
+    "sketch": "Spielplatz/Spielplatz.ino",
+    "output": "/home/nino/vscode-arduino-output"
+}
