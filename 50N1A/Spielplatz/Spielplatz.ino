@@ -2,6 +2,11 @@
 
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NO_ACK);
 
+struct Player {
+  int x;
+  bool shooting;
+};
+
 uint8_t invaderBitmaps[2][8] = {{
                                     0b01011010,
                                     0b00111100,
@@ -22,19 +27,20 @@ uint8_t invaderBitmaps[2][8] = {{
                                     0b10011001,
                                     0b10011001,
                                 }};
-
 uint8_t playerBitmap[8] = {
     0b00011000, 0b00011000, 0b10011001, 0b10111101,
     0b11011011, 0b01011010, 0b01111110, 0b00100100,
 };
-
+const int width = 128;
+const int height = 64;
 int frame = 0;
+Player player;
+
+void playerDraw(void) { u8g.drawBitmap(player.x - 4, 56, 1, 8, playerBitmap); }
 
 void drawInvader(int x, int y) {
   u8g.drawBitmap(x, y, 1, 8, invaderBitmaps[(frame >> 2) & 1]);
 }
-
-void drawPlayer(int x, int y) { u8g.drawBitmap(x, y, 1, 8, playerBitmap); }
 
 void draw(void) {
   for (int x = 4; x < 128; x += 16) {
@@ -42,12 +48,14 @@ void draw(void) {
       drawInvader(x, y);
     }
   }
-  drawPlayer(56, 56);
+  playerDraw();
 }
 
 void setup(void) {
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
+  player.x = width / 2;
+  player.shooting = false;
 }
 
 void loop(void) {
