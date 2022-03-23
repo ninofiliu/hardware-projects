@@ -3,6 +3,8 @@
 
 const int width = 32;
 const int height = 8;
+const int nb_bullets = height;
+const int nb_invaders = (width / 2) * (height / 2);
 
 struct Player {
   int x;
@@ -15,7 +17,14 @@ struct Bullet {
   int y;
 };
 
-void draw(struct Player player, struct Bullet bullets[height]) {
+struct Invader {
+  char alive;
+  int x;
+  int y;
+};
+
+void draw(struct Player player, struct Bullet bullets[nb_bullets],
+          struct Invader invaders[nb_invaders]) {
   char screen[width * height];
 
   for (int i = 0; i < width * height; i++) {
@@ -23,9 +32,14 @@ void draw(struct Player player, struct Bullet bullets[height]) {
   }
 
   screen[width * (height - 1) + player.x] = '0' + player.lives;
-  for (int i = 0; i < height; i++) {
+  for (int i = 0; i < nb_bullets; i++) {
     if (bullets[i].firing) {
       screen[width * bullets[i].y + bullets[i].x] = '^';
+    }
+  }
+  for (int i = 0; i < nb_invaders; i++) {
+    if (invaders[i].alive) {
+      screen[width * invaders[i].y + invaders[i].x] = 'X';
     }
   }
 
@@ -53,24 +67,40 @@ int main() {
   player.x = 0;
   player.lives = 5;
 
-  struct Bullet bullets[height];
-  for (int i = 0; i < height; i++) {
+  struct Bullet bullets[nb_bullets];
+  for (int i = 0; i < nb_bullets; i++) {
     bullets[i].firing = 0;
     bullets[i].x = 0;
     bullets[i].y = 0;
   }
 
-  for (int j = 0; j < 1000; j++) {
+  struct Invader invaders[nb_invaders];
+  for (int i = 0; i < nb_invaders; i++) {
+    invaders[i].alive = 1;
+    invaders[i].x = 2 * (i % (width / 2));
+    invaders[i].y = i / (width / 2);
+  }
+
+  for (int j = 0; j < 100; j++) {
     player.x = (player.x + 1) % width;
-    bullets[j % height].firing = 1;
-    bullets[j % height].x = player.x;
-    bullets[j % height].y = height - 1;
-    for (int k = 0; k < height; k++) {
+    bullets[j % nb_bullets].firing = 1;
+    bullets[j % nb_bullets].x = player.x;
+    bullets[j % nb_bullets].y = height - 1;
+    for (int k = 0; k < nb_bullets; k++) {
       if (bullets[k].firing) {
         bullets[k].y--;
       }
     }
-    draw(player, bullets);
+    for (int k = 0; k < nb_bullets; k++) {
+      for (int l = 0; l < nb_invaders; l++) {
+        if (bullets[k].firing && invaders[l].alive &&
+            bullets[k].x == invaders[l].x && bullets[k].y == invaders[l].y) {
+          invaders[l].alive = 0;
+          bullets[k].firing = 0;
+        }
+      }
+    }
+    draw(player, bullets, invaders);
     sleep(1);
   }
 
