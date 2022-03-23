@@ -27,16 +27,27 @@ uint8_t invaderBitmaps[2][8] = {{
                                     0b10011001,
                                     0b10011001,
                                 }};
-uint8_t playerBitmap[8] = {
+uint8_t idlePlayerBitmap[8] = {
     0b00011000, 0b00011000, 0b10011001, 0b10111101,
     0b11011011, 0b01011010, 0b01111110, 0b00100100,
 };
+uint8_t shootingPlayerBitmap[8] = {
+    0b00011000, 0b01011010, 0b01011010, 0b01111110,
+    0b01011010, 0b01011010, 0b01111110, 0b01100110,
+};
 const int width = 128;
 const int height = 64;
+const int leftButton = 4;
+const int shootButton = 3;
+const int rightButton = 2;
+const int xForce = 4;
 int frame = 0;
 Player player;
 
-void playerDraw(void) { u8g.drawBitmap(player.x - 4, 56, 1, 8, playerBitmap); }
+void playerDraw(void) {
+  u8g.drawBitmap(player.x - 4, 56, 1, 8,
+                 player.shooting ? shootingPlayerBitmap : idlePlayerBitmap);
+}
 
 void drawInvader(int x, int y) {
   u8g.drawBitmap(x, y, 1, 8, invaderBitmaps[(frame >> 2) & 1]);
@@ -52,6 +63,9 @@ void draw(void) {
 }
 
 void setup(void) {
+  pinMode(leftButton, INPUT);
+  pinMode(shootButton, INPUT);
+  pinMode(rightButton, INPUT);
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
   player.x = width / 2;
@@ -59,6 +73,15 @@ void setup(void) {
 }
 
 void loop(void) {
+  if (digitalRead(leftButton) == HIGH) {
+    player.x -= xForce;
+  };
+  if (digitalRead(rightButton) == HIGH) {
+    player.x += xForce;
+  };
+  player.x = min(width - 4, max(0, player.x));
+  player.shooting = digitalRead(shootButton) == HIGH;
+
   u8g.firstPage();
   do {
     u8g.setFont(u8g_font_6x10);
@@ -67,5 +90,6 @@ void loop(void) {
     u8g.setFontPosTop();
     draw();
   } while (u8g.nextPage());
+
   frame++;
 }
