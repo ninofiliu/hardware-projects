@@ -1,5 +1,9 @@
 #include "U8glib.h"
 
+const int xForce = 4;
+const int bulletSpeed = 1;
+const int nbFramesBetweenShots = 8;
+
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NO_ACK);
 
 struct Player {
@@ -8,9 +12,15 @@ struct Player {
 };
 
 struct Invader {
+  bool alive;
   int x;
   int y;
-  bool alive;
+};
+
+struct Bullet {
+  bool firing;
+  int x;
+  int y;
 };
 
 uint8_t invaderBitmaps[2][8] = {{
@@ -46,12 +56,14 @@ const int height = 64;
 const int leftButton = 4;
 const int shootButton = 3;
 const int rightButton = 2;
-const int xForce = 4;
 const int nbInvadersX = 6;
 const int nbInvadersY = 3;
+const int nbBullets = 64;
 int frame = 0;
+int lastShootingFrame = 0;
 Player player;
 Invader invaders[nbInvadersX * nbInvadersY];
+Bullet bullets[nbBullets];
 
 void draw(void) {
   u8g.drawBitmap(player.x - 4, 56, 1, 8,
@@ -60,6 +72,11 @@ void draw(void) {
     if (invaders[i].alive) {
       u8g.drawBitmap(invaders[i].x - 4, invaders[i].y - 4, 1, 8,
                      invaderBitmaps[frame % 2]);
+    }
+  }
+  for (int i = 0; i < nbBullets; i++) {
+    if (bullets[i].firing) {
+      u8g.drawBox(bullets[i].x - 1, bullets[i].y - 1, 2, 2);
     }
   }
 }
@@ -82,6 +99,11 @@ void setup(void) {
     invaders[i].x = 4 + 16 * (i % nbInvadersX);
     invaders[i].y = 4 + 16 * (i / nbInvadersX);
   }
+  for (int i = 0; i < nbBullets; i++) {
+    bullets[i].firing = false;
+    bullets[i].x = 0;
+    bullets[i].y = 0;
+  }
 }
 
 void loop(void) {
@@ -92,7 +114,17 @@ void loop(void) {
     player.x += xForce;
   };
   player.x = min(width - 4, max(0, player.x));
-  player.shooting = digitalRead(shootButton) == HIGH;
+  if (digitalRead(shootButton) == HIGH) {
+    player.shooting = true;
+    if (frame - lastShootingFrame >= nbFramesBetweenShots) {
+      bullets[frame % nbBullets].firing = true;
+      bullets[frame % nbBullets].x = player.x;
+      bullets[frame % nbBullets].y = 60;
+      lastShootingFrame = frame;
+    }
+  } else {
+    player.shooting = false;
+  }
 
   for (int i = 0; i < nbInvadersX * nbInvadersY; i++) {
     if (invaders[i].alive) {
@@ -103,6 +135,24 @@ void loop(void) {
       }
       if (frame % 40 == 0) {
         invaders[i].y++;
+      }
+    }
+  }
+
+  for (int i = 0; i < nbBullets; i++) {
+    if (bullets[i].firing) {
+      bullets[i].y -= bulletSpeed;
+      if (bullets[i].y == 0) {
+        bullets[i].firing = false;
+      } else {
+        for (int j = 0; j < nbInvadersX * nbInvadersY; j++) {
+          if (invaders[j].alive) {
+            if (abs(invaders[j].x - bullets[i].x) <= 4 &&
+                abs(invaders[j].y - bullets[i].y) < 4) {
+              invaders[j].alive = false;
+            }
+          }
+        }
       }
     }
   }
