@@ -23,31 +23,31 @@ struct Bullet {
   int y;
 };
 
-uint8_t invaderBitmaps[2][8] = {{
-                                    0b01011010,
-                                    0b00111100,
-                                    0b01111110,
-                                    0b01011010,
-                                    0b11011011,
-                                    0b11111111,
-                                    0b10100101,
-                                    0b00100100,
-                                },
-                                {
-                                    0b00011000,
-                                    0b10111101,
-                                    0b01111110,
-                                    0b01011010,
-                                    0b01011010,
-                                    0b11111111,
-                                    0b10011001,
-                                    0b10011001,
-                                }};
-uint8_t idlePlayerBitmap[8] = {
+const uint8_t invaderBitmaps[2][8] = {{
+                                          0b01011010,
+                                          0b00111100,
+                                          0b01111110,
+                                          0b01011010,
+                                          0b11011011,
+                                          0b11111111,
+                                          0b10100101,
+                                          0b00100100,
+                                      },
+                                      {
+                                          0b00011000,
+                                          0b10111101,
+                                          0b01111110,
+                                          0b01011010,
+                                          0b01011010,
+                                          0b11111111,
+                                          0b10011001,
+                                          0b10011001,
+                                      }};
+const uint8_t idlePlayerBitmap[8] = {
     0b00011000, 0b00011000, 0b10011001, 0b10111101,
     0b11011011, 0b01011010, 0b01111110, 0b00100100,
 };
-uint8_t shootingPlayerBitmap[8] = {
+const uint8_t shootingPlayerBitmap[8] = {
     0b00011000, 0b01011010, 0b01011010, 0b01111110,
     0b01011010, 0b01011010, 0b01111110, 0b01100110,
 };
@@ -91,6 +91,17 @@ void setup(void) {
   u8g.setFontRefHeightExtendedText();
   u8g.setDefaultForegroundColor();
   u8g.setFontPosTop();
+
+  while (digitalRead(leftButton) == LOW && digitalRead(shootButton) == LOW &&
+         digitalRead(rightButton) == LOW) {
+    u8g.firstPage();
+    do {
+      u8g.drawStr(0, 0, "Made with <3 for");
+      u8g.drawStr(0, 10, "Sonia, the loveliest");
+      u8g.drawStr(0, 20, "and queerest nerd in");
+      u8g.drawStr(0, 30, "the whole universe");
+    } while (u8g.nextPage());
+  }
 
   player.x = width / 2;
   player.shooting = false;
