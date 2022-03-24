@@ -2,7 +2,8 @@
 
 const int xForce = 4;
 const int bulletSpeed = 1;
-const int nbFramesBetweenShots = 8;
+const int nbFramesBetweenShots = 0;
+const int moveDownEvery = 20;
 
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NO_ACK);
 
@@ -81,6 +82,16 @@ void draw(void) {
   }
 }
 
+void finish(bool won) {
+  u8g.firstPage();
+  do {
+    draw();
+    u8g.drawStr(0, 0, won ? "You won!" : "You lose!");
+  } while (u8g.nextPage());
+  while (true) {
+  }
+}
+
 void setup(void) {
   pinMode(leftButton, INPUT);
   pinMode(shootButton, INPUT);
@@ -144,7 +155,7 @@ void loop(void) {
       } else {
         invaders[i].x--;
       }
-      if (frame % 40 == 0) {
+      if (frame % moveDownEvery == 0) {
         invaders[i].y++;
       }
     }
@@ -172,6 +183,21 @@ void loop(void) {
   do {
     draw();
   } while (u8g.nextPage());
+
+  int nbInvadersAlive = 0;
+  int maxInvadersY = 0;
+  for (int i = 0; i < nbInvadersX * nbInvadersY; i++) {
+    if (invaders[i].alive) {
+      nbInvadersAlive++;
+      maxInvadersY = max(maxInvadersY, invaders[i].y);
+    }
+  }
+  if (nbInvadersAlive == 0) {
+    finish(true);
+  }
+  if (maxInvadersY > 52) {
+    finish(false);
+  }
 
   frame++;
 }
