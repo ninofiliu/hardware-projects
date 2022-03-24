@@ -135,7 +135,7 @@ void loop(void) {
   if (digitalRead(rightButton) == HIGH) {
     player.x += xForce;
   };
-  player.x = min(width - 4, max(0, player.x));
+  player.x = min(width - 4, max(4, player.x));
   if (digitalRead(shootButton) == HIGH) {
     player.shooting = true;
     if (frame - lastShootingFrame >= nbFramesBetweenShots) {
