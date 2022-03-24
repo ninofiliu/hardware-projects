@@ -7,6 +7,12 @@ struct Player {
   bool shooting;
 };
 
+struct Invader {
+  int x;
+  int y;
+  bool alive;
+};
+
 uint8_t invaderBitmaps[2][8] = {{
                                     0b01011010,
                                     0b00111100,
@@ -41,25 +47,21 @@ const int leftButton = 4;
 const int shootButton = 3;
 const int rightButton = 2;
 const int xForce = 4;
+const int nbInvadersX = 6;
+const int nbInvadersY = 3;
 int frame = 0;
 Player player;
-
-void playerDraw(void) {
-  u8g.drawBitmap(player.x - 4, 56, 1, 8,
-                 player.shooting ? shootingPlayerBitmap : idlePlayerBitmap);
-}
-
-void drawInvader(int x, int y) {
-  u8g.drawBitmap(x, y, 1, 8, invaderBitmaps[(frame >> 2) & 1]);
-}
+Invader invaders[nbInvadersX * nbInvadersY];
 
 void draw(void) {
-  for (int x = 4; x < 128; x += 16) {
-    for (int y = 0; y < 48; y += 16) {
-      drawInvader(x, y);
+  u8g.drawBitmap(player.x - 4, 56, 1, 8,
+                 player.shooting ? shootingPlayerBitmap : idlePlayerBitmap);
+  for (int i = 0; i < nbInvadersX * nbInvadersY; i++) {
+    if (invaders[i].alive) {
+      u8g.drawBitmap(invaders[i].x - 4, invaders[i].y - 4, 1, 8,
+                     invaderBitmaps[frame % 2]);
     }
   }
-  playerDraw();
 }
 
 void setup(void) {
@@ -68,8 +70,18 @@ void setup(void) {
   pinMode(rightButton, INPUT);
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
+  u8g.setFont(u8g_font_6x10);
+  u8g.setFontRefHeightExtendedText();
+  u8g.setDefaultForegroundColor();
+  u8g.setFontPosTop();
+
   player.x = width / 2;
   player.shooting = false;
+  for (int i = 0; i < nbInvadersX * nbInvadersY; i++) {
+    invaders[i].alive = true;
+    invaders[i].x = 4 + 16 * (i % nbInvadersX);
+    invaders[i].y = 4 + 16 * (i / nbInvadersX);
+  }
 }
 
 void loop(void) {
@@ -82,12 +94,21 @@ void loop(void) {
   player.x = min(width - 4, max(0, player.x));
   player.shooting = digitalRead(shootButton) == HIGH;
 
+  for (int i = 0; i < nbInvadersX * nbInvadersY; i++) {
+    if (invaders[i].alive) {
+      if ((frame % 80) < 40) {
+        invaders[i].x++;
+      } else {
+        invaders[i].x--;
+      }
+      if (frame % 40 == 0) {
+        invaders[i].y++;
+      }
+    }
+  }
+
   u8g.firstPage();
   do {
-    u8g.setFont(u8g_font_6x10);
-    u8g.setFontRefHeightExtendedText();
-    u8g.setDefaultForegroundColor();
-    u8g.setFontPosTop();
     draw();
   } while (u8g.nextPage());
 
