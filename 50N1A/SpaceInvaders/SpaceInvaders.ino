@@ -1,9 +1,9 @@
 #include "U8glib.h"
 
 const int xForce = 4;
-const int bulletSpeed = 1;
-const int nbFramesBetweenShots = 0;
-const int moveDownEvery = 20;
+const int bulletSpeed = 2;
+const int nbFramesBetweenShots = 8;
+const int moveDownEvery = 7;
 
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NO_ACK);
 
@@ -62,6 +62,7 @@ const int nbInvadersY = 3;
 const int nbBullets = 64;
 int frame = 0;
 int lastShootingFrame = 0;
+int nbShot = 0;
 Player player;
 Invader invaders[nbInvadersX * nbInvadersY];
 Bullet bullets[nbBullets];
@@ -86,7 +87,17 @@ void finish(bool won) {
   u8g.firstPage();
   do {
     draw();
-    u8g.drawStr(0, 0, won ? "You won!" : "You lose!");
+    if (won) {
+      u8g.drawStr(0, 0, "Yasss bitch slay!");
+      u8g.drawStr(0, 10, "You won))");
+      char scoreStr[21];
+      int score = 1000 / nbShot;
+      sprintf(scoreStr, "Score: %d", score);
+      u8g.drawStr(0, 20, scoreStr);
+    } else {
+      u8g.drawStr(0, 0, "Haha u suck!");
+      u8g.drawStr(0, 10, "xD");
+    }
   } while (u8g.nextPage());
   while (true) {
   }
@@ -143,6 +154,7 @@ void loop(void) {
       bullets[frame % nbBullets].x = player.x;
       bullets[frame % nbBullets].y = 60;
       lastShootingFrame = frame;
+      nbShot++;
     }
   } else {
     player.shooting = false;
@@ -172,6 +184,7 @@ void loop(void) {
             if (abs(invaders[j].x - bullets[i].x) <= 4 &&
                 abs(invaders[j].y - bullets[i].y) < 4) {
               invaders[j].alive = false;
+              bullets[i].firing = false;
             }
           }
         }
